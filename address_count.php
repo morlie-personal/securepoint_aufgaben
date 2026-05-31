@@ -8,4 +8,8 @@ foreach ($data as $value) {
   array_push($ip_addresses, ...$ip_matches[0]);
 }
 
+$count = array_count_values($ip_addresses);
+arsort($count);
+$array = array_slice($count, 0, -(count($count)-10));
+echo '<pre>'; print_r($array); echo '</pre>';
 ?>
