@@ -22,6 +22,11 @@ foreach ($data as $valueIndex => $value) {
     preg_match_all('/serial=(\S+)/', $value, $serial_nums);
     preg_match_all('/specs=(\S+)/', $value, $spec);
 
+    if (empty($serial_nums[1]) || empty($spec[1])) {
+        $line = $valueIndex++;
+        error_log("Probleme mit der Formattierung in Zeile $line, bitte pruefen");
+        continue;
+    }
 
     $serial_numbers_to_specs[$spec[1][0]][] = $serial_nums[1][0];
     $specs_to_serial_numbers[$serial_nums[1][0]][] = $spec[1][0];
