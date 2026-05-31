@@ -1,6 +1,7 @@
 <?php
 ini_set('memory_limit', '8192M');
-$data = file("./updatev12-access-pseudonymized.log", FILE_IGNORE_NEW_LINES);
+$files = glob(__DIR__ . '/*.log');
+$data = file($files[0], FILE_IGNORE_NEW_LINES);
 $ip_addresses = array();
 
 foreach ($data as $value) {
