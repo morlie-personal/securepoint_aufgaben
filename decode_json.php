@@ -15,4 +15,21 @@ error_log("Mehrere Log Dateien gefunden, es kann aber nur eine geladen werden...
 
 $data = file($files[0], FILE_IGNORE_NEW_LINES);
 
+$specs=array();
+foreach ($data as $value) {
+    preg_match_all('/specs=(\S+)/', $value, $spec);
+
+    array_push($specs, $spec[1][0]);
+}
+
+
+$decoded = base64_decode($specs[0]);
+$uncompressed = @gzinflate(substr($decoded, 10));
+
+echo print_r(json_decode($uncompressed, true));
+
+
+foreach ($specs as $spec) {
+    echo base64_decode($spec);
+}
 ?>
