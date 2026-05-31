@@ -9,7 +9,7 @@
   }
 
   if (sizeof($files) > 1) {
-      error_log("Mehrere Log Dateien gefunden, es kann aber nur eine geladen werden... Lade $files[0]");
+    error_log("Mehrere Log Dateien gefunden, es kann aber nur eine geladen werden... Lade $files[0]");
   }
 
   $data = file($files[0], FILE_IGNORE_NEW_LINES);
