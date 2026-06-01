@@ -15,14 +15,14 @@ error_log("Mehrere Log Dateien gefunden, es kann aber nur eine geladen werden...
 $data = file($files[0], FILE_IGNORE_NEW_LINES);
 
     //Aufgabe 1
-    $ip_addresses = array();
+    $serial_numbers = array();
 
     foreach ($data as $value) {
-        preg_match_all('/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/', $value, $ip_matches);
-        array_push($ip_addresses, ...$ip_matches[0]);
+        preg_match_all('/serial=(\S+)/', $value, $serial_nums);
+        array_push($serial_numbers, ...$serial_nums[0]);
     }
 
-    $count = array_count_values($ip_addresses);
+    $count = array_count_values($serial_numbers);
     arsort($count);
     $array = array_slice($count, 0, -(count($count)-10));
     echo '<h1>Aufgabe 1</h1>';
@@ -32,9 +32,8 @@ $data = file($files[0], FILE_IGNORE_NEW_LINES);
 
 
     //Aufgabe 2
-    $serial_numbers_to_specs_total = array();
-    $serial_numbers_to_specs = array();
-    $specs_to_serial_numbers = array();
+    $serial_numbers_to_mac = array();
+    $mac_to_serial_numbers = array();
 
     foreach ($data as $valueIndex => $value) {
         preg_match_all('/serial=(\S+)/', $value, $serial_nums);
@@ -46,38 +45,42 @@ $data = file($files[0], FILE_IGNORE_NEW_LINES);
             continue;
         }
 
-        $serial_numbers_to_specs[$spec[1][0]][] = $serial_nums[1][0];
-        $specs_to_serial_numbers[$serial_nums[1][0]][] = $spec[1][0];
+        $decoded = base64_decode($spec[1][0]);
+        $uncompressed = @gzinflate(substr($decoded, 10));
+        $jsondecoded = json_decode($uncompressed, true);
+
+        if (empty($jsondecoded["mac"]) || $jsondecoded["mac"] == null) {
+            $line = $valueIndex++;
+            error_log("Probleme in dekodierten Daten bei Log-Zeile $line, bitte pruefen");
+            continue;
+        } else {
+            $serial_numbers_to_mac[$jsondecoded["mac"]][] = $serial_nums[1][0];
+            $mac_to_serial_numbers[$serial_nums[1][0]][] = $jsondecoded["mac"];
+        }   
+
+        // $serial_numbers_to_specs[$spec[1][0]][] = $serial_nums[1][0];
+        // $specs_to_serial_numbers[$serial_nums[1][0]][] = $spec[1][0];
     }
 
-    foreach ($serial_numbers_to_specs as $spec => $serials) {
-        $serial_numbers_to_specs_total[$spec] = $serials;
+    foreach ($serial_numbers_to_mac as $mac => $serials) {
+        $serial_numbers_to_mac[$mac] = array_unique($serials);
     }
 
-    foreach ($serial_numbers_to_specs as $spec => $serials) {
-        $serial_numbers_to_specs[$spec] = array_unique($serials);
+    foreach ($mac_to_serial_numbers as $serial => $macs) {
+        $mac_to_serial_numbers[$serial] = array_unique($macs);
     }
 
-    foreach ($specs_to_serial_numbers as $serial => $specs) {
-        $specs_to_serial_numbers[$serial] = array_unique($specs);
-    }
-
-    $count = array_map('count', $specs_to_serial_numbers);
+    $count = array_map('count', $serial_numbers_to_mac);
     arsort($count);
-    $serial_array_total = array_slice($count, 0, -(count($count)-10));
+    $serial_mac_array = array_slice($count, 0, -(count($count)-11));
 
-    $count = array_map('count', $serial_numbers_to_specs);
+    $count = array_map('count', $mac_to_serial_numbers);
     arsort($count);
-    $serial_array = array_slice($count, 0, -(count($count)-10));
-
-    $count = array_map('count', $specs_to_serial_numbers);
-    arsort($count);
-    $spec_array = array_slice($count, 0, -(count($count)-10));
+    $mac_array = array_slice($count, 0, -(count($count)-10));
 
     echo '<h1>Aufgabe 2</h1>';
-    echo '<pre>'; print_r($serial_array_total); echo '</pre>';
-    echo '<pre>'; print_r($serial_array); echo '</pre>';
-    echo '<pre>'; print_r($spec_array); echo '</pre>';
+    echo '<pre>'; print_r($serial_mac_array); echo '</pre>';
+    echo '<pre>'; print_r($mac_array); echo '</pre>';
     echo '<br />';
 
 
