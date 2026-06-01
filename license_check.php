@@ -20,6 +20,7 @@ $data = file($files[0], FILE_IGNORE_NEW_LINES);
 $serial_numbers_to_mac = array();
 $mac_to_serial_numbers = array();
 
+// Iterate through logfile stored in Array for regex matches for serial numbers and specs
 foreach ($data as $valueIndex => $value) {
     preg_match_all('/serial=(\S+)/', $value, $serial_nums);
     preg_match_all('/specs=(\S+)/', $value, $spec);
@@ -30,10 +31,12 @@ foreach ($data as $valueIndex => $value) {
         continue;
     }
 
+    // decode and unzip the spec string to access json data
     $decoded = base64_decode($spec[1][0]);
     $uncompressed = @gzinflate(substr($decoded, 10));
     $jsondecoded = json_decode($uncompressed, true);
 
+    // storing the serial numbers found to the mac addresses in multidimensional array, logging faulty entries
     if (empty($jsondecoded["mac"]) || $jsondecoded["mac"] == null) {
         $line = $valueIndex++;
         error_log("Probleme in dekodierten Daten bei Log-Zeile $line, bitte pruefen");
@@ -47,6 +50,7 @@ foreach ($data as $valueIndex => $value) {
     // $specs_to_serial_numbers[$serial_nums[1][0]][] = $spec[1][0];
 }
 
+// eliminating duplicates from the array for proper counting
 foreach ($serial_numbers_to_mac as $mac => $serials) {
     $serial_numbers_to_mac[$mac] = array_unique($serials);
 }

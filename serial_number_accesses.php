@@ -17,11 +17,13 @@
 
   $serial_numbers = array();
 
+  // Iterate through logfile stored in Array and push regex matches in $serial_numbers array
   foreach ($data as $value) {
     preg_match_all('/serial=(\S+)/', $value, $serial_nums);
     array_push($serial_numbers, ...$serial_nums[0]);
   }
 
+  // Use array_count_values to count all serial number values, sorting the array and shortening it to a length of 10
   $count = array_count_values($serial_numbers);
   arsort($count);
   $array = array_slice($count, 0, -(count($count)-10));
